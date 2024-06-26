@@ -1,5 +1,10 @@
 import math
 
+# Constants for screen dimensions and Chip-8 display
+#Dimensions
+CHIP8_WIDTH = 64
+CHIP8_HEIGHT = 32
+
 class CPU:
     def __init__(self):
         print("Emulator Started")
@@ -8,7 +13,26 @@ class CPU:
         self.Iregister = 0  # Index Register (12-bit addressable)
         self.memory = [0] * 4096  # 4KB memory
         self.Stack = []  # Stack for subroutine calls
-        self.font = []  # Font set (not initialized in the provided code)
+        self.font = [        0xF0, 0x90, 0x90, 0x90, 0xF0, # 0
+        0x20, 0x60, 0x20, 0x20, 0x70, # 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, # 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, # 3
+        0x90, 0x90, 0xF0, 0x10, 0x10, # 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, # 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, # 6
+        0xF0, 0x10, 0x20, 0x40, 0x40, # 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, # 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, # 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, # A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, # B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, # C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, # D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, # E
+        0xF0, 0x80, 0xF0, 0x80, 0x80  # F
+        ]  # Font set
+        #Store the fonts in memory for later use 
+        #for i in range(len(self.font)):
+        #    self.memory[i] = self.font[i]
         self.DelayTimer = 0  # 8-bit delay timer
         self.SoundTimer = 0  # 8-bit sound timer
 
@@ -98,7 +122,9 @@ class CPU:
         Nibble2 = self.memory[self.PC + 1]
         self.PC += 2
         return Nibble1, Nibble2
-
+    def DrawScreen():
+        print("Drawing Screen")
+        
     def Execute(self):
         print("Executing")
         self.Decode()
