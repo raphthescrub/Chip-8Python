@@ -1,5 +1,6 @@
 import math
 import time
+import pygame
 # Constants for screen dimensions and Chip-8 display
 #Dimensions
 
@@ -60,7 +61,6 @@ class CPU:
             self.PC = self.Stack.pop()
             print(f"Popped: {self.PC}")
         elif Nibs[0] == 0x0 and Nibs[3] == 0x0:  # 00E0: Clear Screen
-            pass
             #print("Clear")
             for row in self.Screen:
                 for col in range(len(row)):
@@ -132,34 +132,28 @@ class CPU:
         
         elif Nibs[0] == 0xD:  # DXYN: Draw sprite at (VX, VY) with width 8 pixels and height N pixels
             print("Drawing")
-            X = self.Vregisters[Nibs[1]] & 63  # Cap X coordinate at 63
-            Y = self.Vregisters[Nibs[2]] & 32  # Cap Y coordinate at 32
+            Xpos = self.Vregisters[Nibs[1]] & 63  # Cap X coordinate at 63
+            Ypos = self.Vregisters[Nibs[2]] & 32  # Cap Y coordinate at 32
             height = Nibs[3]
             self.Vregisters[15] = 0  # Collision detection (VF)
-            #Draw Sprite    
-            for row in range(height):
-                #Get wherever Iregister is pointing to
-                #Iterate through each pixel
-                print("row" + str(row))
-                sprite_row = self.memory[self.Iregister + row]
-                print(sprite_row)
-                #col is a pixel #each sprite is 8 pixels width
-                for col in range(8):
-                    print("col" + str(col))
-                    #Finds whichever pixel is on
-                    sprite_pixel = sprite_row & (0b1 << 7 - col)
-                    screen_x = X + row
-                    screen_y = Y + col
-                    print("Sprow" + str(sprite_row))
-                    #if pixel high and a pixel at position is also high make Vf = 15
-                    if (sprite_pixel != 0):
-                        self.Screen[screen_x][screen_y] = "#"
-                        print("Yea")
+            #8 pixel wide sprites
+            #Iterate through each sprite row (height)
+            for Spriterow in range(height):
+            #iterate for each bit in sprite row(spirte row data = Memory[INdex + spriteRow])
+                spriterowdata = self.memory[self.Iregister + Spriterow]
+                for spriteBit in range(8):
+                    spritePixel = (spriterowdata and (0b1 << 7 - spriteBit))
+                    #if high
+                    if(spritePixel == 0b1):
+                        #draw if on screen if(xpos + spriteBit<screenwisth and yPos)
+                        if((Xpos + spriteBit) < 63 and (Ypos + Spriterow) < 32):
+                            if(self.Screen[Xpos][Ypos] == "#"):
+                                #Conflict
+                                self.Screen[Xpos][Ypos] = ""
+                                self.Vregisters[15] = 1
+                            else:
+                                self.Screen[Xpos][Ypos] = "#"
             self.DrawScreen()
-                    # if pixel high draw it
-                    # Make draw flag true
-            #Call Draw Screen Function                    
-            
     def Fetch(self):
         print("Fetching")
         Nibble1 = self.memory[self.PC]
@@ -167,13 +161,10 @@ class CPU:
         self.PC += 2
         return Nibble1, Nibble2
     def DrawScreen(self):
-        print("Screen")
-        for row in self.Screen:
-            print(row)
+        print(self.Screen)
     def Execute(self):
         print("Executing")
         self.Decode()
-        print(self.Screen)
 
     def LoadROM(self):
         #self.memory.append(self.font)
@@ -185,3 +176,18 @@ class CPU:
             self.memory[start_address + i] = byte
             #=print(hex(byte))
         print("Firtst Byte is " + str(self.memory[self.PC]))
+
+    def LoadROM2(self):
+        #ADD the font set
+        start_address = len(self.font)
+        for i,byte in enumerate(self.font):
+            self.memory[i]= byte
+        Instructions = [0xA0,0x00, 0x60, 0x10, 0x61, 0x10, 0xD0, 0x15]
+        for i,byte in enumerate(Instructions):
+            self.memory[i + start_address]= byte
+        print(hex(self.memory[start_address]))
+
+    def LoadROM3(self):
+        #ADD the font set
+        Instructions = [0xA0,0x08, 0x60, 0x10, 0x61, 0x10, 0xD0, 0x15,  0xF0, 0x90, 0x90, 0x90, 0xF0, 0x00, 0x00, 0x00]   
+        self.memory = Instructions
